@@ -28,24 +28,39 @@ def make_text(chains):
     #TODO: Start with a capital letter
     #TODO: End with a punctuation (!?.)
     
-    upper_bound = 10
+    upper_bound = 100
     lower_bound = 2
     string = ""
     for i in range(lower_bound, upper_bound + 1):
-        if i == 2:
-            random_key = random.choice(chains.keys())
-        else:
-        # select the following word
-            random_word = random.choice(chains[random_key])
-            x, y = random_key
-            # print x, y, random_word
-            random_key = (y, random_word)
-            string = string + " "+random_word
-    return string 
-    # for key, value in chains.iteritems():
-    #     print random.choice(chains.keys())
-    
+        # Check to see if we are on the first loop by checking if i equals our
+        # lower bound
+        if i == lower_bound:
+            # Instantiate the empty strings seed_x, since we need to test on it
+            # before our script sets it.
+            seed_x = ""
 
+            # If seed_x (the first word in the string) isn't titlecase, keep
+            # trying new random keys until it is.
+            while not seed_x.istitle():
+                # If seed_x isn't an titlecase, pick a new random key
+                random_key = random.choice(chains.keys())
+                # Save the values from the random key for concatting later
+                seed_x, seed_y = random_key
+
+
+        # If we aren't on the first loop
+        else:
+            # select a random word from the values assigned to chains[random_key]
+            random_word = random.choice(chains[random_key])
+            # set variables x and y to the values in the random_key tuple
+            x, y = random_key
+            # set random_key to be a new n-gram (2nd word of previous tuple, random word) 
+            random_key = (y, random_word)
+            # append the newest random_word to our string
+            string = string + " " + random_word
+
+    return seed_x + " " + seed_y + string 
+    
     # return "Here's some random text."
 
 def main():
@@ -53,8 +68,11 @@ def main():
     f = open(args[1])
 
 
-    # Change this to read input_text from a file
+    # read input_text from a file
     input_text = f.read()
+    f.close()
+    f = open(args[2])
+    input_text = input_text + f.read()
     f.close()
 
     chain_dict = make_chains(input_text)

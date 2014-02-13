@@ -2,6 +2,16 @@
 
 import sys
 import random
+import twitter
+# import authenticate # This is where our Twitter secrets are stored
+
+
+def twitter_junk(random_text):
+    api = twitter.Api(consumer_key=authenticate.api_key,
+                      consumer_secret=authenticate.api_secret,
+                      access_token_key=authenticate.access_token,
+                      access_token_secret=authenticate.access_token_secret)
+    api.PostUpdate(random_text)
 
 def make_chains(corpus):
     """Takes an input text as a string and returns a dictionary of
@@ -25,16 +35,16 @@ def make_text(chains):
     """Takes a dictionary of markov chains and returns random text
     based off an original text."""
 
-    #TODO: Start with a capital letter
     #TODO: End with a punctuation (!?.)
     
-    upper_bound = 100
-    lower_bound = 2
+    # upper_bound = 10
+    # lower_bound = 2
     string = ""
-    for i in range(lower_bound, upper_bound + 1):
+    counter = 0
+    while len(string) < 110:
         # Check to see if we are on the first loop by checking if i equals our
         # lower bound
-        if i == lower_bound:
+        if counter == 0:
             # Instantiate the empty strings seed_x, since we need to test on it
             # before our script sets it.
             seed_x = ""
@@ -58,25 +68,45 @@ def make_text(chains):
             random_key = (y, random_word)
             # append the newest random_word to our string
             string = string + " " + random_word
+        
+        #Increment the counter
+        counter += 1
+    
+    # if we hit our upper_bound and random_word[-1] in ('.?!"')
+    # build our final string. otherwise keep going until random_word[-1] in ('.?!"')
+    if not random_word[-1] in ('.!?"'):
+        while not random_word[-1] in ('.!?"'):
+            random_word = random.choice(chains[random_key])
+            x, y = random_key
+                # set random_key to be a new n-gram (2nd word of previous tuple, random word) 
+            random_key = (y, random_word)
+        return seed_x + " " + seed_y + string + " " + random_word
+    else:
+        return seed_x + " " + seed_y + string       
+    # Build and return our final string
 
-    return seed_x + " " + seed_y + string 
     
     # return "Here's some random text."
 
 def main():
     args = sys.argv
+    
+    #TODO: Incorporate the file reading into a function
+    # read input_text from file 1
     f = open(args[1])
-
-
-    # read input_text from a file
     input_text = f.read()
     f.close()
+
+    # read input text from file 2
     f = open(args[2])
     input_text = input_text + f.read()
     f.close()
 
     chain_dict = make_chains(input_text)
     random_text = make_text(chain_dict)
+    # Post to twitter!
+    # twitter_junk(random_text)
+    print len(random_text)
     print random_text
 
 if __name__ == "__main__":
